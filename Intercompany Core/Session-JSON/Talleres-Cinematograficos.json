@@ -1,0 +1,10 @@
+{
+   "error" : {
+      "code" : -10,
+      "message" : {
+         "lang" : "en-us",
+         "value" : "Item code 'IT007' already exists"
+      }
+   }
+}
+
