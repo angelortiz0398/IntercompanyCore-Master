@@ -8,7 +8,7 @@ namespace IntercompanyCore.ServiceLayer
 {
     public class Account
     {
-        string Cuenta { get; set; }
+        public string Cuenta { get; set; }
 
         public Account(string cuenta)
         {

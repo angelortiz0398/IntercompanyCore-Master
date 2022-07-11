@@ -228,6 +228,12 @@ namespace IntercompanyCore
                                     case "S1C16":
                                         oc.DocumentLines[i].TaxCode = "I1P16";
                                         break;
+                                    case "IVAA16":
+                                        oc.DocumentLines[i].TaxCode = "IVAP16";
+                                        break;
+                                    case "IVAV16":
+                                        oc.DocumentLines[i].TaxCode = "IVAC16";
+                                        break;
                                     default:
                                         oc.DocumentLines[i].TaxCode = "P0";
                                         break;
@@ -323,6 +329,12 @@ namespace IntercompanyCore
                                     case "S1C16":
                                         fp.DocumentLines[i].TaxCode = "I1P16";
                                         break;
+                                    case "IVAA16":
+                                        fp.DocumentLines[i].TaxCode = "IVAP16";
+                                        break;
+                                    case "IVAV16":
+                                        fp.DocumentLines[i].TaxCode = "IVAC16";
+                                        break;
                                     default:
                                         fp.DocumentLines[i].TaxCode = "P0";
                                         break;
@@ -411,7 +423,8 @@ namespace IntercompanyCore
                             // Se conecta a la base de datos de la empresa destino
                             serviceLayer1 = await gc2.ConexionSLayerAsync(Convert.ToInt32(pago.U_KAI01_EmpresaDestino));
                             string c = "0" + Convert.ToString(iconexion);
-                            PE pe = new PE(pago.U_KAI01_SN, pago.DocDate, pago.U_KAI01_Intercompany, 'Y', c, pago.CardCode, pago.TransferAccount, pago.TransferSum, pago.CheckAccount);
+                            PE pe = new PE(pago.U_KAI01_SN, pago.DocDate, pago.U_KAI01_Intercompany, 'Y', c, pago.CardCode, pago.TransferAccount, pago.TransferSum, pago.CheckAccount, pago.TransferReference);
+                            Console.WriteLine(pago.TransferReference);
                             // El objeto PaymentInvoices tiene la informacion del pago recibido y efectuado
                             pe.PaymentInvoices = pago.PaymentInvoices;
                             pe.PaymentChecks = pago.PaymentChecks;
@@ -435,66 +448,66 @@ namespace IntercompanyCore
                             {
                                 case 1:
                                     direccionCuentas = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Accounts\\E1.json");
-                                    openStreamCuentas = File.OpenRead(direccionConexion);
+                                    openStreamCuentas = File.OpenRead(direccionCuentas);
                                     account = await JsonSerializer.DeserializeAsync<Account>(openStreamCuentas);
-                                    //pe.TransferAccount = account.Cuenta;
+                                    pe.TransferAccount = account.Cuenta;
                                     break;
                                 case 2:
                                     direccionCuentas = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Accounts\\E2.json");
-                                    openStreamCuentas = File.OpenRead(direccionConexion);
+                                    openStreamCuentas = File.OpenRead(direccionCuentas);
                                     account = await JsonSerializer.DeserializeAsync<Account>(openStreamCuentas);
-                                    //pe.TransferAccount = account.Cuenta;
+                                    pe.TransferAccount = account.Cuenta;
                                     break;
                                 case 3:
                                     direccionCuentas = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Accounts\\E3.json");
-                                    openStreamCuentas = File.OpenRead(direccionConexion);
+                                    openStreamCuentas = File.OpenRead(direccionCuentas);
                                     account = await JsonSerializer.DeserializeAsync<Account>(openStreamCuentas);
-                                    //pe.TransferAccount = account.Cuenta;
+                                    pe.TransferAccount = account.Cuenta;
                                     break;
                                 case 4:
                                     direccionCuentas = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Accounts\\E4.json");
-                                    openStreamCuentas = File.OpenRead(direccionConexion);
+                                    openStreamCuentas = File.OpenRead(direccionCuentas);
                                     account = await JsonSerializer.DeserializeAsync<Account>(openStreamCuentas);
-                                    //pe.TransferAccount = account.Cuenta;
+                                    pe.TransferAccount = account.Cuenta;
                                     break;
                                 case 5:
                                     direccionCuentas = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Accounts\\E5.json");
-                                    openStreamCuentas = File.OpenRead(direccionConexion);
+                                    openStreamCuentas = File.OpenRead(direccionCuentas);
                                     account = await JsonSerializer.DeserializeAsync<Account>(openStreamCuentas);
-                                    //pe.TransferAccount = account.Cuenta;
+                                    pe.TransferAccount = account.Cuenta;
                                     break;
                                 case 6:
                                     direccionCuentas = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Accounts\\E6.json");
-                                    openStreamCuentas = File.OpenRead(direccionConexion);
+                                    openStreamCuentas = File.OpenRead(direccionCuentas);
                                     account = await JsonSerializer.DeserializeAsync<Account>(openStreamCuentas);
-                                    //pe.TransferAccount = account.Cuenta;
+                                    pe.TransferAccount = account.Cuenta;
                                     break;
                                 case 7:
                                     direccionCuentas = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Accounts\\E7.json");
-                                    openStreamCuentas = File.OpenRead(direccionConexion);
+                                    openStreamCuentas = File.OpenRead(direccionCuentas);
                                     account = await JsonSerializer.DeserializeAsync<Account>(openStreamCuentas);
-                                    //pe.TransferAccount = account.Cuenta;
+                                    pe.TransferAccount = account.Cuenta;
                                     break;
                                 case 8:
                                     direccionCuentas = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Accounts\\E8.json");
-                                    openStreamCuentas = File.OpenRead(direccionConexion);
+                                    openStreamCuentas = File.OpenRead(direccionCuentas);
                                     account = await JsonSerializer.DeserializeAsync<Account>(openStreamCuentas);
-                                    //pe.TransferAccount = account.Cuenta;
+                                    pe.TransferAccount = account.Cuenta;
                                     break;
                                 case 9:
                                     direccionCuentas = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Accounts\\E9.json");
-                                    openStreamCuentas = File.OpenRead(direccionConexion);
+                                    openStreamCuentas = File.OpenRead(direccionCuentas);
                                     account = await JsonSerializer.DeserializeAsync<Account>(openStreamCuentas);
-                                    //pe.TransferAccount = account.Cuenta;
+                                    pe.TransferAccount = account.Cuenta;
                                     break;
                                 default:
                                     direccionCuentas = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Accounts\\E1.json");
-                                    openStreamCuentas = File.OpenRead(direccionConexion);
+                                    openStreamCuentas = File.OpenRead(direccionCuentas);
                                     account = await JsonSerializer.DeserializeAsync<Account>(openStreamCuentas);
-                                    //pe.TransferAccount = account.Cuenta;
+                                    pe.TransferAccount = account.Cuenta;
                                     break;
                             }
-                            
+
 
                             // Crea el pago efectuado
                             var response = await serviceLayer1.Request("VendorPayments").PostAsync<PE>(pe);

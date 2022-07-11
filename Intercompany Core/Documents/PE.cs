@@ -31,6 +31,8 @@ namespace IntercompanyCore.Documents
         public string U_KAI01_SN { get; set; }
         [JsonPropertyName("TransferAccount")]
         public string TransferAccount { get; set; }
+        [JsonPropertyName("TransferReference")]
+        public string TransferReference { get; set; }
         [JsonPropertyName("TransferDate")]
         public string TransferDate { get; set; }
         [JsonPropertyName("TransferSum")]
@@ -46,7 +48,7 @@ namespace IntercompanyCore.Documents
         [JsonPropertyName("PaymentCreditCards")]
         public IList<PaymentChecks> PaymentCreditCards { get; set; }
 
-        public PE(string cardCode, DateTime docDate, char u_KAI01_Intercompany, char sincronizado, string empresaDestino, string u_KAI01_SN, string transferAccount, string transferSum, string checkAccount)
+        public PE(string cardCode, DateTime docDate, char u_KAI01_Intercompany, char sincronizado, string empresaDestino, string u_KAI01_SN, string transferAccount, string transferSum, string checkAccount, string transferReference)
         {
             CardCode = cardCode;
             DocDate = docDate;
@@ -57,6 +59,7 @@ namespace IntercompanyCore.Documents
             TransferAccount = transferAccount;
             TransferSum = transferSum;
             CheckAccount = checkAccount;
+            TransferReference = transferReference;
         }
     }
 }
