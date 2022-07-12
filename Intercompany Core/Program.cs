@@ -180,7 +180,7 @@ namespace IntercompanyCore
                     Transaccion t = new Transaccion();
                     Transaccion t1 = new Transaccion();
                     SLConnection serviceLayer1 = await gc2.ConexionSLayerAsync(iconexion);
-                    var createdOrders = await serviceLayer1.Request("Orders").Select("*").GetAllAsync<OV>();
+                    var createdOrders = await serviceLayer1.Request("Orders").Select("*").Filter("U_KAI01_Intercompany eq 'Y' and U_KAI01_Sincronizado eq 'N'").GetAllAsync<OV>();
                     // Si existen ordenes de ventas que no esten sincronizadas y apliquen para Intercompany
                     if (createdOrders.Count > 0)
                     {
@@ -278,7 +278,7 @@ namespace IntercompanyCore
                     Transaccion t = new Transaccion();
                     Transaccion t1 = new Transaccion();
                     SLConnection serviceLayer1 = await gc2.ConexionSLayerAsync(iconexion);
-                    var supplierInvoices = await serviceLayer1.Request("Invoices").Select("*").Filter("U_KAI01_Intercompany eq 'Y'").GetAllAsync<FC>();
+                    var supplierInvoices = await serviceLayer1.Request("Invoices").Select("*").Filter("U_KAI01_Intercompany eq 'Y' and U_KAI01_Sincronizado eq 'N'").GetAllAsync<FC>();
                     
 
                     // Si existen facturas de clientes que no esten sincronizadas y apliquen para Intercompany
@@ -393,7 +393,7 @@ namespace IntercompanyCore
                     Transaccion t = new Transaccion();
                     Transaccion t1 = new Transaccion();
                     SLConnection serviceLayer1 = await gc2.ConexionSLayerAsync(iconexion);
-                    var incomingPayments = await serviceLayer1.Request("IncomingPayments").Select("*").Filter("U_KAI01_Intercompany eq 'Y'").GetAllAsync<PR>();
+                    var incomingPayments = await serviceLayer1.Request("IncomingPayments").Select("*").Filter("U_KAI01_Intercompany eq 'Y' and U_KAI01_Sincronizado eq 'N'").GetAllAsync<PR>();
 
                     // Si existen pagos recibidos que no esten sincronizados y apliquen para Intercompany
                     if (incomingPayments.Count > 0)
@@ -538,7 +538,121 @@ namespace IntercompanyCore
                 {
                     Console.WriteLine(ex);
                 }
-                 
+
+                /*
+                 * Factura de proveedor a factura de cliente
+                 */
+                try
+                {
+                    Transaccion t = new Transaccion();
+                    Transaccion t1 = new Transaccion();
+                    SLConnection serviceLayer1 = await gc2.ConexionSLayerAsync(iconexion);
+                    var purchasesInvoices = await serviceLayer1.Request("PurchaseInvoices").Select("*").Filter("U_KAI01_Intercompany eq 'Y' and U_KAI01_Sincronizado eq 'N'").GetAllAsync<FP>();
+
+
+                    // Si existen facturas de proveedor que no esten sincronizadas y apliquen para Intercompany
+                    if (purchasesInvoices.Count > 0)
+                    {
+                        var pinvoices = purchasesInvoices.Where(SI => SI.U_KAI01_Intercompany == 'Y' && SI.U_KAI01_Sincronizado == 'N');
+                        foreach (var purinv in pinvoices)
+                        {
+                            t.TipoTransaccion = 2;
+                            t.TipodCRUD = "NA";
+                            t.IdOrigen = iconexion;
+                            t.IdDestino = Convert.ToInt32(purinv.U_KAI01_EmpresaDestino);
+                            t.Sincronizado = 'Y';
+                            t.ErrorDesc = " ";
+                            t.IdObjeto = purinv.DocEntry;
+                            t.TipoOperacion = 'D';
+                            t.TipoDocumento = "FP";
+                            var jsonString = System.Text.Json.JsonSerializer.Serialize(t);
+                            t.JSON = jsonString;
+
+
+                            // Se crea la transaccion en la base de datos concentradora
+                            var result = await clientDoc.PostAsync($"{clientDoc.BaseAddress}/Transaccion/CrearTransaccion", new StringContent(System.Text.Json.JsonSerializer.Serialize(t), Encoding.UTF8, "application/json"));
+                            // Se edita la factura del proveedor indicandole que ya esta sincronizada
+                            await serviceLayer1.Request("PurchaseInvoices", purinv.DocEntry).PatchAsync(new { U_KAI01_Sincronizado = 'Y' });
+                            // Se desconecta del servidor
+                            await serviceLayer1.Request("Logout").PostAsync();
+
+                            // Se conecta a la base de datos de la empresa destino
+                            serviceLayer1 = await gc2.ConexionSLayerAsync(Convert.ToInt32(purinv.U_KAI01_EmpresaDestino));
+                            string c = "0" + Convert.ToString(iconexion);
+                            FC fc = new FC(purinv.U_KAI01_SN, purinv.DocDate, purinv.DocDueDate, purinv.U_KAI01_Intercompany, 'Y', c, purinv.CardCode, purinv.DocEntry);
+
+                            fc.DocumentLines = purinv.DocumentLines;
+                            for (int i = 0; i < fc.DocumentLines.Count; i++)
+                            {
+                                switch (fc.DocumentLines[i].TaxCode)
+                                {
+                                    case "P0":
+                                        fc.DocumentLines[i].TaxCode = "C0";
+                                        break;
+                                    case "P16":
+                                        fc.DocumentLines[i].TaxCode = "C16";
+                                        break;
+                                    case "PE":
+                                        fc.DocumentLines[i].TaxCode = "CE";
+                                        break;
+                                    case "I1P16":
+                                        fc.DocumentLines[i].TaxCode = "S1C16";
+                                        break;
+                                    case "IVAP16":
+                                        fc.DocumentLines[i].TaxCode = "IVAA16";
+                                        break;
+                                    case "IVAC16":
+                                        fc.DocumentLines[i].TaxCode = "IVAV16";
+                                        break;
+                                    default:
+                                        fc.DocumentLines[i].TaxCode = "C0";
+                                        break;
+                                }
+                                if (fc.DocumentLines[i].BaseType == "22")
+                                {
+                                    fc.DocumentLines[i].BaseType = "17";
+                                    // Hacer la busqueda de la orden de compra que tenga U_KAI01_Referencia == DocEntry, de la orden de venta
+                                    string referencia = fc.DocumentLines[i].BaseEntry;
+                                    string filter = "U_KAI01_Referencia eq " + referencia;
+                                    var Orders = await serviceLayer1.Request("Orders").Select("*").Filter(filter).GetAllAsync<OV>();
+                                    var ov = Orders.FirstOrDefault(order => order.U_KAI01_Referencia == Convert.ToInt32(referencia));
+                                    // Cambiar el BaseEntry por el cual estara relacionado con la orden de compra usando su DocEntry de esta base
+                                    fc.DocumentLines[i].BaseEntry = Convert.ToString(ov.DocEntry);
+                                }
+
+                            }
+
+                            // Crea la factura de proveedor
+                            var response = await serviceLayer1.Request("Invoices").PostAsync<FC>(fc);
+
+                            // Se crea la transaccion en la base de datos concentradora pero con los datos de la factura de proveedor
+                            t1.TipoTransaccion = 2;
+                            t1.TipodCRUD = "NA";
+                            t1.IdOrigen = Convert.ToInt32(purinv.U_KAI01_EmpresaDestino);
+                            t1.IdDestino = iconexion;
+                            t1.Sincronizado = 'Y';
+                            t1.ErrorDesc = " ";
+                            t1.IdObjeto = purinv.DocEntry;
+                            t1.TipoOperacion = 'D';
+                            t1.TipoDocumento = "FC";
+                            var jsonString1 = System.Text.Json.JsonSerializer.Serialize(t1);
+                            t1.JSON = jsonString1;
+
+                            // Se crea la transaccion en la base de datos concentradora
+                            await clientDoc.PostAsync($"{clientDoc.BaseAddress}/Transaccion/CrearTransaccion", new StringContent(System.Text.Json.JsonSerializer.Serialize(t1), Encoding.UTF8, "application/json"));
+                            await serviceLayer1.Request("Logout").PostAsync();
+                        }
+                    }
+                    else
+                    {
+                        await serviceLayer1.Request("Logout").PostAsync();
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
 
             }
             #endregion

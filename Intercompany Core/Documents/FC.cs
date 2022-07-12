@@ -52,19 +52,16 @@ namespace IntercompanyCore.Documents
         [JsonPropertyName("DocumentLines")]
         public IList<DocumentLines> DocumentLines { get; set; }
 
-        public FC(int docEntry, int docNum, string cardCode, string cardName, string docCurrency, DateTime docDate, DateTime docDueDate, string discountPercent, char u_KAI01_Intercompany, char u_KAI01_Sincronizado, string u_KAI01_EmpresaDestino, int u_KAI01_Referencia)
+        public FC(string cardCode, DateTime docDate, DateTime docDueDate, char u_KAI01_Intercompany, char u_KAI01_Sincronizado, string u_KAI01_EmpresaDestino, string u_KAI01_SN, int u_KAI01_Referencia)
         {
-            DocEntry = docEntry;
-            DocNum = docNum;
             CardCode = cardCode;
-            CardName = cardName;
-            DocCurrency = docCurrency;
             DocDate = docDate;
             DocDueDate = docDueDate;
-            DiscountPercent = discountPercent;
             U_KAI01_Intercompany = u_KAI01_Intercompany;
             U_KAI01_Sincronizado = u_KAI01_Sincronizado;
             U_KAI01_EmpresaDestino = u_KAI01_EmpresaDestino;
+            U_KAI01_SN = u_KAI01_SN;
+            DocumentStatus = "bost_Open";
             U_KAI01_Referencia = u_KAI01_Referencia;
         }
     }

@@ -31,6 +31,8 @@ namespace IntercompanyCore.Documents
             public char U_KAI01_Sincronizado { get; set; }
             [JsonPropertyName("U_KAI01_EmpresaDestino")]
             public string U_KAI01_EmpresaDestino { get; set; }
+            [JsonPropertyName("U_KAI01_Referencia")]
+            public int U_KAI01_Referencia { get; set; }
             [JsonPropertyName("U_KAI01_SN")]
             public string U_KAI01_SN { get; set; }
             [JsonPropertyName("DocumentLines")]
